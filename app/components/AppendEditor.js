@@ -10,6 +10,7 @@ import Settings from './Settings';
 const initialState = {
   text: '',
   appendText: '',
+  appendTemplate: '',
   appendNewLine: false,
   appendNewParagraph: false,
   appendMode: false,
@@ -66,34 +67,39 @@ export default class AppendEditor extends React.Component {
       this.setState({
         appendTextRetrieved: true,
       });
-      if (note.content.appendEditorFontEdit || note.content.appendEditorFontView) {
+      if (note.content.appendEditorFontEdit || note.content.appendEditorFontView || note.content.appendTemplate) {
         this.setState({
           fontEdit: note.content.appendEditorFontEdit,
           fontView: note.content.appendEditorFontView,
-        })
+          appendTemplate: note.content.appendTemplate,
+        });
       }
-      // If either are true, then they are all defined, so we load them all
+      // If either appendNewLine or appendNewParagraph are true, 
+      // then both are defined, so we load them both
       if (note.content.appendNewLine || note.content.appendNewParagraph) {
         this.setState({
-        appendText: note.content.appendText,
         appendNewLine: note.content.appendNewLine,
         appendNewParagraph: note.content.appendNewParagraph,
+        });
+      }
+      // If appendNewLine and appendNewParagraph are false or undefined and appendText is not empty,
+      // Then user has made them both false or are still false by default
+      // Therefore we leave them as false (see above for the initial state)
+      if (note.content.appendText) {
+        this.setState({
+        appendText: note.content.appendText,
         }, () => {
           this.setState({
             appendMode: true
           });
         });
       }
-      // If both are false or undefined and appendText is not empty,
-      // Then user has made them both false or are still false by default
-      // Therefore we leave them as false (see above for the initial state)
-      else if (note.content.appendText) {
+      // if the appendText is empty but appendTemplate is not
+      // then set appendText as appendTemplate
+      else if (!note.content.appendText && note.content.appendTemplate) {
         this.setState({
-        appendText: note.content.appendText,
-        }, () => {
-          this.setState({
-            appendMode: true
-          });
+        appendText: note.content.appendTemplate,
+        appendMode: true,
         });
       }
       else {
@@ -106,6 +112,7 @@ export default class AppendEditor extends React.Component {
       //console.log("loaded append newline: " + this.state.newLine);
       //console.log("loaded append new paragraph: " + this.state.newParagraph);
       //console.log("internal appendText: " + this.editorKit.internal.note.content.appendText);
+      //console.log("loaded append template: " + this.state.appendTemplate)
     })
   }
 
@@ -126,7 +133,7 @@ export default class AppendEditor extends React.Component {
       * This means we need multiple versions of this function depending on what we want to save */
       this.setState({
         text: this.state.text.concat(text),
-        appendText: '',
+        appendText: this.state.appendTemplate,
       }, () => {
         let note = this.editorKit.internal.note;
         if (note) {
@@ -186,6 +193,10 @@ export default class AppendEditor extends React.Component {
   onRefreshEdit = () => {
     this.setState({
       refreshEdit: !this.state.refreshEdit,
+    }, () => {
+      if (this.state.appendMode) {
+        this.skipToBottom();
+      }
     });
   }
 
@@ -334,10 +345,11 @@ export default class AppendEditor extends React.Component {
     }
   }
 
-  onConfirmSettings = ({fontEdit}, {fontView}) => {
+  onConfirmSettings = ({fontEdit}, {fontView}, {appendTemplate}) => {
     this.setState({
       fontEdit: fontEdit,
       fontView: fontView,
+      appendTemplate: appendTemplate,
       showSettings: false,
     });
     let note = this.editorKit.internal.note;
@@ -345,6 +357,7 @@ export default class AppendEditor extends React.Component {
       this.editorKit.internal.componentManager.saveItemWithPresave(note, () => {
         note.content.appendEditorFontEdit = fontEdit;
         note.content.appendEditorFontView = fontView;
+        note.content.appendTemplate = appendTemplate;
       });
     }
   }
@@ -601,6 +614,7 @@ export default class AppendEditor extends React.Component {
               cancelText="Cancel"
               fontEdit={this.state.fontEdit}
               fontView={this.state.fontView}
+              appendTemplate={this.state.appendTemplate}
             />
           )}
           {this.state.confirmPrintURL && (
@@ -628,6 +642,7 @@ export default class AppendEditor extends React.Component {
               printMode={this.state.printMode}
               rows={this.state.appendRows}
               fontEdit={this.state.fontEdit}
+              appendTemplate={this.state.appendTemplate}
             />
           )}
           <button type="button" id="scrollToTopButton" onClick={this.scrollToTop} className="sk-button info">

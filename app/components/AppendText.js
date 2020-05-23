@@ -74,7 +74,7 @@ export default class AppendText extends React.Component {
     }
     this.props.onAppend(appendText);
     this.setState({
-      text: '',
+      text: this.props.appendTemplate,
     });
     const appendTextArea = document.getElementById("appendTextArea");
     appendTextArea.focus();

@@ -8,6 +8,7 @@ export default class Settings extends React.Component  {
     this.state = {
       fontEdit: this.props.fontEdit,
       fontView: this.props.fontView,
+      appendTemplate: this.props.appendTemplate,
     };
 
     this.handleChange = this.handleChange.bind(this);
@@ -40,10 +41,11 @@ export default class Settings extends React.Component  {
     else if (this.state.fontView) {
       fontViewMessage = this.state.fontView;
     }
-    const {fontEdit, fontView} = this.state
+    const {fontEdit, fontView, appendTemplate} = this.state
     alert('Your chosen font for Edit/Append is: ' + fontEditMessage + "\n" +
-    'Your chosen font for View/Print is: ' + fontViewMessage);
-    this.props.onConfirm({fontEdit}, {fontView});
+    'Your chosen font for View/Print is: ' + fontViewMessage + "\n" +
+    'Your template is: ' + this.state.appendTemplate);
+    this.props.onConfirm({fontEdit}, {fontView}, {appendTemplate});
   }
 
   clearFontEdit = () =>  {
@@ -93,6 +95,7 @@ export default class Settings extends React.Component  {
   render () {
     //<h3>↶</h3>
     const { title, onCancel, confirmText, cancelText, helpLink } = this.props
+    const { appendTemplate } = this.state;
     return (
   <div className="note-overlay">
     <div className="note-dialog sk-panel">
@@ -212,6 +215,22 @@ export default class Settings extends React.Component  {
             <img src="icons/ic-undo.svg"/>
             </button>
           </div>
+        </div>
+        <div className="sk-panel-row settings">
+          <div className="sk-h2">Create a template for Appending: </div>
+        </div>
+          <div className="sk-panel-row settings appendTemplate">
+            <textarea
+              id="appendTemplateTextArea"
+              name="appendTemplate"
+              className="sk-input contrast textarea"
+              rows="5"
+              spellCheck="true"
+              value={appendTemplate}
+              onChange={this.handleChange}
+              type="text"
+              style={{fontFamily: this.props.fontEdit}}
+            />
         </div>
         </div>
       </div>
