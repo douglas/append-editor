@@ -3,7 +3,7 @@ import React from 'react';
 import AppendEditor from "./components/AppendEditor";
 
 export default class App extends React.Component {
-  constructor(props) {
+  constructor(props: any) {
     super(props);
   }
 

@@ -2,12 +2,18 @@ import React from 'react';
 
 let keyMap = new Map();
 
-export default class EditNote extends React.Component {
+type MyProps = { text: string, onSave: any,
+printMode: boolean,
+fontEdit: string};
+
+type MyState = { text: string};
+
+export default class EditNote extends React.Component<MyProps, MyState> {
   static defaultProps = {
     // none
   };
 
-  constructor(props) {
+  constructor(props: MyProps) {
     super(props);
 
     this.state = {
@@ -15,15 +21,15 @@ export default class EditNote extends React.Component {
     };
   }
 
-  handleInputChange = event => {
+  handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const target = event.target;
-    const value = target.value
+    const value = target.value;
 
     this.setState({
       text: value
     }, () => {
       try {
-        this.onSave(event);
+        this.onSave();
       }
       catch (error) {
         console.error(error);
@@ -31,21 +37,20 @@ export default class EditNote extends React.Component {
     });
   };
 
-  onSave = e => {
-    e.preventDefault();
+  onSave = () => {
     const { text } = this.state;
-    this.props.onSave({text});
+    this.props.onSave({ text });
   };
 
-  onKeyDown = (e) => {
+  onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     keyMap.set(e.key, true);
-    console.log("Keys pressed: " + e.key + "KeyMap for key: " + keyMap.get(e.key)) + "KeyMap for Shift: " + keyMap.get('Shift');
-    
+    //console.log("Keys pressed: " + e.key + "KeyMap for key: " + keyMap.get(e.key)) + "KeyMap for Shift: " + keyMap.get('Shift');
+
     // Click Edit if 'Escape' is pressed
     if (keyMap.get('Escape')) {
       e.preventDefault();
       keyMap.set('Escape', false);
-      var editButton = document.getElementById("editButton");
+      const editButton = document.getElementById("editButton");
       editButton.click();
     }
     // Add four spaces if tab is pressed without shift
@@ -53,7 +58,7 @@ export default class EditNote extends React.Component {
       e.preventDefault();
       // Using document.execCommand gives us undo support
       document.execCommand("insertText", false, "\t")
-        // document.execCommand works great on Chrome/Safari but not Firefox
+      // document.execCommand works great on Chrome/Safari but not Firefox
     }
     // Add two spaces and line break if Shift and Enter are pressed
     else if (keyMap.get('Shift') && keyMap.get('Enter')) {
@@ -63,7 +68,7 @@ export default class EditNote extends React.Component {
     // Save note if Control and Enter are pressed
     else if (keyMap.get('Control') && keyMap.get('Enter')) {
       e.preventDefault();
-      this.onSave(e);
+      this.onSave();
     }
     // Add two stars if Control + b are pressed
     else if (keyMap.get('Control') && keyMap.get('b')) {
@@ -96,7 +101,7 @@ export default class EditNote extends React.Component {
       document.execCommand("insertText", false, "[]()")
     }
     // Add ordered list item if Control + Alt + l are pressed
-    else if (keyMap.get('Control') && keyMap.get('Alt') && keyMap.get('l')){
+    else if (keyMap.get('Control') && keyMap.get('Alt') && keyMap.get('l')) {
       e.preventDefault();
       document.execCommand("insertText", false, "\n1. ")
     }
@@ -112,46 +117,46 @@ export default class EditNote extends React.Component {
     }
     // Add quote Control + q, Control + ' or Control + " are pressed
     else if ((keyMap.get('Control') && keyMap.get('q')) ||
-     (keyMap.get('Control') && keyMap.get('\'')) ||
-     (keyMap.get('Control') && keyMap.get('\"'))) {
+      (keyMap.get('Control') && keyMap.get('\'')) ||
+      (keyMap.get('Control') && keyMap.get('\"'))) {
       e.preventDefault();
       document.execCommand("insertText", false, "\n> ")
     }
     // Save note if Control and S are pressed
     else if (keyMap.get('Control') && keyMap.get('s')) {
       e.preventDefault();
-      this.onSave(e);
+      this.onSave();
     }
   }
 
-  onKeyUp = (e) => {
+  onKeyUp = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     keyMap.set(e.key, false);
   }
 
-  onBlur = (e) => {
+  onBlur = (e: React.FocusEvent<HTMLTextAreaElement>) => {
     keyMap.clear();
   }
 
   render() {
-    const {text} = this.state;
-    
+    const { text } = this.state;
+
     return (
-      <div className={"sk-panel main edit "  + (this.props.printMode ? 'printModeOn' : 'printModeOff' )}>
+      <div className={"sk-panel main edit " + (this.props.printMode ? 'printModeOn' : 'printModeOff')}>
         <div className="sk-panel-content edit">
           <textarea
             id="editTextArea"
             name="text"
             className="sk-input contrast textarea editnote"
             placeholder="Welcome to the Append Editor! 😄"
-            rows="15"
+            rows={15}
             spellCheck="true"
             value={text}
             onChange={this.handleInputChange}
             onKeyDown={this.onKeyDown}
             onKeyUp={this.onKeyUp}
             onBlur={this.onBlur}
-            type="text"
-            style={{fontFamily: this.props.fontEdit}}
+            //stype="text"
+            style={{ fontFamily: this.props.fontEdit }}
           />
         </div>
       </div>

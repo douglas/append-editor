@@ -8,14 +8,14 @@ const ProposalClassProperties = require('@babel/plugin-proposal-class-properties
 
 module.exports = {
   mode: 'production',
-  devtool: 'cheap-source-map',
+  devtool: 'source-map',
   devServer: {
     disableHostCheck: true,
     historyApiFallback: true,
     watchOptions: { aggregateTimeout: 300, poll: 1000 },
   },
   entry: [
-    path.resolve(__dirname, 'app/main.js'),
+    path.resolve(__dirname, 'app/main.tsx'),
     path.resolve(__dirname, 'app/stylesheets/main.scss')
   ],
   output: {
@@ -25,6 +25,19 @@ module.exports = {
   },
   externals: {
     'filesafe-js': 'filesafe-js'
+  },
+  resolve: {
+    modules: [
+      "node_modules",
+      path.resolve(__dirname, "app")
+    ],
+    extensions: [".tsx", ".ts", '.js', '.jsx', '.css', '.scss'],
+    alias: {
+      stylekit: path.join(
+        __dirname,
+        'node_modules/sn-stylekit/dist/stylekit.css'
+      )
+    }
   },
   module: {
     rules: [
@@ -44,6 +57,14 @@ module.exports = {
           'sass-loader',
         ],
       },
+      { test: /\.tsx?$/, 
+        use: ["ts-loader"], 
+        exclude: /node_modules/ },
+      {
+        enforce: "pre",
+        test: /\.js$/,
+        loader: "source-map-loader"
+      },
       {
         test: /\.js[x]?$/,
         include: [
@@ -58,24 +79,11 @@ module.exports = {
       }
     ]
   },
-  resolve: {
-    modules: [
-      "node_modules",
-      path.resolve(__dirname, "app")
-    ],
-    extensions: ['.js', '.jsx', '.css', '.scss'],
-    alias: {
-      stylekit: path.join(
-        __dirname,
-        'node_modules/sn-stylekit/dist/stylekit.css'
-      )
-    }
-  },
   plugins: [
     new MiniCssExtractPlugin(),
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify('production')
     }),
-    new CopyWebpackPlugin([{ from: './app/index.html', to: 'index.html' }])
+    //new CopyWebpackPlugin([{ from: './app/index.html', to: 'index.html' }])
   ]
 };

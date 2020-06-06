@@ -2,12 +2,31 @@ import React from 'react';
 
 let keyMap = new Map();
 
-export default class AppendText extends React.Component {
+type myProps = {
+  children?: any;
+  text: string,
+  fontEdit: string,
+  newLine: boolean,
+  newParagraph: boolean,
+  onAppend: any, // function
+  onSaveAppendText: any, // function
+  onSaveAppendTextAndCheckboxes: any, // function
+  printMode: boolean,
+  rows: number
+}
+
+type myState = {
+  text: string,
+  newLine: boolean,
+  newParagraph: boolean,
+}
+
+export default class AppendText extends React.Component<myProps, myState> {
   static defaultProps = {
     // none
   };
 
-  constructor(props) {
+  constructor(props: any) {
     super(props);
 
     this.state = {
@@ -19,7 +38,7 @@ export default class AppendText extends React.Component {
     this.handleInputChange = this.handleInputChange.bind(this);
   }
 
-  handleInputChange = event => {
+  handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const target = event.target;
     //const value = target.value
     const value = target.type === 'checkbox' ? target.checked : target.value;
@@ -27,39 +46,39 @@ export default class AppendText extends React.Component {
     this.setState({
       [name]: value,
     }
-    // This callback is used to save the append text and checkboxes
-    // This will work in an SN context, but breaks the standalone editor, so we need to catch the error
-    , () => {
+      // This callback is used to save the append text and checkboxes
+      // This will work in an SN context, but breaks the standalone editor, so we need to catch the error
+      , () => {
         try {
           this.onSaveAppendTextAndCheckboxes();
         }
         catch (error) {
           console.error(error);
         }
-    });
+      });
   };
 
   // This is an almost duplicate of the above editor. Here we don't save the checkboxes to improve performance
-  handleTextAreaChange = event => {
+  handleTextAreaChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const target = event.target;
     const value = target.value
     this.setState({
       text: value,
     }
-    // This callback is used to save the append text
-    // This will work in an SN context, but breaks the standalone editor, so we need to catch the error
-    , () => {
+      // This callback is used to save the append text
+      // This will work in an SN context, but breaks the standalone editor, so we need to catch the error
+      , () => {
         try {
           this.onSaveAppendText();
         }
         catch (error) {
           console.error(error);
         }
-    });
+      });
   };
 
-  onAppend = (e) => {
-    e.preventDefault();
+  onAppend = () => {
+    //e.preventDefault();
     const { text } = this.state;
     var appendText = '';
     // We test for new paragraph first even though new line is on top and is on by default
@@ -94,10 +113,10 @@ export default class AppendText extends React.Component {
     this.props.onSaveAppendTextAndCheckboxes(text, newLine, newParagraph);
   };
 
-  onKeyDown = (e) => {
+  onKeyDown = (e: React.KeyboardEvent) => {
     keyMap.set(e.key, true);
     //console.log("Keys pressed: " + e.key + "KeyMap for key: " + keyMap.get(e.key)) + "KeyMap for Shift: " + keyMap.get('Shift');
-    
+
     // Click Append if 'Escape' is pressed
     if (keyMap.get('Escape')) {
       e.preventDefault();
@@ -110,7 +129,7 @@ export default class AppendText extends React.Component {
       e.preventDefault();
       // Using document.execCommand gives us undo support
       document.execCommand("insertText", false, "\t")
-        // document.execCommand works great on Chrome/Safari but not Firefox
+      // document.execCommand works great on Chrome/Safari but not Firefox
     }
     // Add two spaces and line break if Shift and Enter are pressed
     else if (keyMap.get('Shift') && keyMap.get('Enter')) {
@@ -120,7 +139,7 @@ export default class AppendText extends React.Component {
     // Append text if Control and Enter are pressed
     else if (keyMap.get('Control') && keyMap.get('Enter')) {
       e.preventDefault();
-      this.onAppend(e);
+      this.onAppend();
     }
     // Add two stars if Control + b are pressed
     else if (keyMap.get('Control') && keyMap.get('b')) {
@@ -153,7 +172,7 @@ export default class AppendText extends React.Component {
       document.execCommand("insertText", false, "[]()")
     }
     // Add ordered list item if Control + Alt + l are pressed
-    else if (keyMap.get('Control') && keyMap.get('Alt') && keyMap.get('l')){
+    else if (keyMap.get('Control') && keyMap.get('Alt') && keyMap.get('l')) {
       e.preventDefault();
       document.execCommand("insertText", false, "\n1. ")
     }
@@ -169,31 +188,31 @@ export default class AppendText extends React.Component {
     }
     // Add quote Control + q, Control + ' or Control + " are pressed
     else if ((keyMap.get('Control') && keyMap.get('q')) ||
-     (keyMap.get('Control') && keyMap.get('\'')) ||
-     (keyMap.get('Control') && keyMap.get('\"'))) {
+      (keyMap.get('Control') && keyMap.get('\'')) ||
+      (keyMap.get('Control') && keyMap.get('\"'))) {
       e.preventDefault();
       document.execCommand("insertText", false, "\n> ")
     }
     // Append text if Control and S are pressed
     else if (keyMap.get('Control') && keyMap.get('s')) {
       e.preventDefault();
-      this.onAppend(e);
+      this.onAppend();
     }
   }
 
-  onKeyUp = (e) => {
+  onKeyUp = (e: React.KeyboardEvent) => {
     keyMap.set(e.key, false);
   }
 
-  onBlur = (e) => {
+  onBlur = (e: React.FocusEvent) => {
     keyMap.clear();
   }
 
   render() {
-    const {text} = this.state;
+    const { text } = this.state;
 
     return (
-      <div className={"sk-panel main appendix " + (this.props.printMode ? 'printModeOn' : 'printModeOff' )}>
+      <div className={"sk-panel main appendix " + (this.props.printMode ? 'printModeOn' : 'printModeOff')}>
         <div className="sk-panel-content edit">
           <textarea
             id="appendTextArea"
@@ -207,15 +226,15 @@ export default class AppendText extends React.Component {
             onKeyDown={this.onKeyDown}
             onKeyUp={this.onKeyUp}
             onBlur={this.onBlur}
-            style={{fontFamily: this.props.fontEdit}}
-            type="text"
+            style={{ fontFamily: this.props.fontEdit }}
+            //type="text"
           />
         </div>
         <div className="sk-panel-row">
           <form className="checkBoxForm">
             <label>
               <input
-                name="newLine"            
+                name="newLine"
                 type="checkbox"
                 checked={this.state.newLine}
                 onChange={this.handleInputChange} />
@@ -224,7 +243,7 @@ export default class AppendText extends React.Component {
             <br />
             <label>
               <input
-                name="newParagraph"            
+                name="newParagraph"
                 type="checkbox"
                 checked={this.state.newParagraph}
                 onChange={this.handleInputChange} />
@@ -232,11 +251,11 @@ export default class AppendText extends React.Component {
             </label>
           </form>
           <div className="sk-button-group stretch">
-            <button 
-            type="button" 
-            id="appendTextButton"
-            onClick={this.onAppend}
-            className="sk-button info" 
+            <button
+              type="button"
+              id="appendTextButton"
+              onClick={this.onAppend}
+              className="sk-button info"
             >
               <div className="sk-label">
                 Append
